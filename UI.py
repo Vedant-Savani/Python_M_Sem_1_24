@@ -158,13 +158,6 @@ class GUI:
 
 
 
-
-
-
-
-
-
-
     def sudent_dashboard_page(self):
         root=self.root
         root=self.root
@@ -298,237 +291,250 @@ class GUI:
 
 
     def admin_dashboard_page(self):
-            root=self.root
-            root=self.root
-            for child in root.winfo_children(): 
-                child.destroy()
-            self.root.minsize(900,500)    
-            # self.root.maxsize(00,420) 
-
-            
-            side_panel = tk.Frame(root, bg="#333333", width=200, height=500)
-            side_panel.pack(side="left", fill="y")
-            main_content = tk.Frame(root, bg="#f5f5f5")
-            main_content.pack(side="right", expand=True, fill="both")
-
-
-            # Side panel TAB BUTTONS
-            viewBooks_button = tk.Button(side_panel, text="View Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                        activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(viewBooks,"viewBooks"), bd=0)
-            viewBooks_button.pack(fill="both", pady=10)
-
-            addBooks_button = tk.Button(side_panel, text="Add Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(addBooks,"addBooks"), bd=0)
-            addBooks_button.pack(fill="x", pady=10)
-            
-            delBooks_button = tk.Button(side_panel, text="Remove Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(delBooks,"delBooks"), bd=0)
-            delBooks_button.pack(fill="x", pady=10)
-
-            addMembers_button = tk.Button(side_panel, text="Add Member", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                        activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(addMembers,"addMembers"), bd=0)
-            addMembers_button.pack(fill="x", pady=10)
-            
-            delMembers_button = tk.Button(side_panel, text="Remove Member", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                        activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(delMembers,'delMembers'), bd=0)
-            delMembers_button.pack(fill="x", pady=10)
-
-
-
-            #TABS CONTENT
-            viewBooks= tk.Frame(main_content, bg="#f5f5f5")
-            addBooks = tk.Frame(main_content, bg="#f5f5f5")
-            delBooks = tk.Frame(main_content, bg="#f5f5f5")
-            addMembers = tk.Frame(main_content, bg="#f5f5f5")
-            delMembers = tk.Frame(main_content, bg="#f5f5f5")
-            
-            for frame in (viewBooks,addBooks,addMembers,delBooks,delMembers):
-                frame.pack(fill="both", expand=True)
-
-
-            # ViewBooks Frame
-                    
-            viewBooks_canvas = tk.Canvas(viewBooks)
-            viewBooks_canvas.pack(fill="both", expand=True, side="left")
-
-            viewBooks_scrollBar = tk.Scrollbar(viewBooks, orient="vertical", command=viewBooks_canvas.yview)
-            viewBooks_scrollBar.pack(side="right", fill="y")
-
-            viewBooks_canvas.configure(yscrollcommand=viewBooks_scrollBar.set)
-
-            viewBooks_frame = tk.Frame(viewBooks_canvas)
-            viewBooks_canvas.create_window((0, 0), anchor="nw", window=viewBooks_frame)
-
-            def on_frame_configure(event):
-                viewBooks_canvas.configure(scrollregion=viewBooks_canvas.bbox("all"))
-
-            viewBooks_frame.bind("<Configure>", on_frame_configure)
-
-            def on_canvas_configure(event):
-                viewBooks_canvas.itemconfig(viewBooks_canvas.create_window((0, 0), anchor='nw', window=viewBooks_frame), width=event.width)
-
-            viewBooks_canvas.bind("<Configure>", on_canvas_configure)
-
-
-
-
-            def display_books_function(dict):
-                for bookID in dict.keys():
-                    self.book_component(viewBooks_frame,dict[bookID])
-
-            books_dict=CSV.loadBooks()
-            display_books_function(books_dict)
-
-            
-            
-
-            
-
-
-
-
-
-
-            #addBooks Frame
-            addBooks_canvas = tk.Canvas(addBooks)
-            addBooks_canvas.pack(fill="both", expand=True, side="left")
-
-            addBooks_scrollBar = tk.Scrollbar(addBooks, orient="vertical", command=addBooks_canvas.yview)
-            addBooks_scrollBar.pack(side="right", fill="y")
-
-            addBooks_canvas.configure(yscrollcommand=addBooks_scrollBar.set)
-
-            addBooks_frame = tk.Frame(addBooks_canvas)
-            addBooks_canvas.create_window((0, 0), anchor="nw", window=addBooks_frame)
-
-            def on_frame_configure(event):
-                addBooks_canvas.configure(scrollregion=addBooks_canvas.bbox("all"))
-
-            addBooks_frame.bind("<Configure>", on_frame_configure)
-
-            def on_canvas_configure(event):
-                addBooks_canvas.itemconfig(addBooks_canvas.create_window((0, 0), anchor='nw', window=addBooks_frame), width=event.width)
-
-            addBooks_canvas.bind("<Configure>", on_canvas_configure)
-
-            #now you can use addBooks_frame as your main screen. 
-            
-
-
-
-
-
-
-
-          #delBooks Frame
-            delBooks_canvas = tk.Canvas(delBooks)
-            delBooks_canvas.pack(fill="both", expand=True, side="left")
-
-            delBooks_scrollBar = tk.Scrollbar(delBooks, orient="vertical", command=delBooks_canvas.yview)
-            delBooks_scrollBar.pack(side="right", fill="y")
-
-            delBooks_canvas.configure(yscrollcommand=delBooks_scrollBar.set)
-
-            delBooks_frame = tk.Frame(delBooks_canvas)
-            delBooks_canvas.create_window((0, 0), anchor="nw", window=delBooks_frame)
-
-            def on_frame_configure(event):
-                delBooks_canvas.configure(scrollregion=delBooks_canvas.bbox("all"))
-
-            delBooks_frame.bind("<Configure>", on_frame_configure)
-
-            def on_canvas_configure(event):
-                delBooks_canvas.itemconfig(delBooks_canvas.create_window((0, 0), anchor='nw', window=delBooks_frame), width=event.width)
-
-            delBooks_canvas.bind("<Configure>", on_canvas_configure)
-
-            #now you can use delBooks_frame as your main screen. 
-
-
-
-
-
-
-        #addMembers Frame
-            addMembers_canvas = tk.Canvas(addMembers)
-            addMembers_canvas.pack(fill="both", expand=True, side="left")
-
-            addMembers_scrollBar = tk.Scrollbar(addMembers, orient="vertical", command=addMembers_canvas.yview)
-            addMembers_scrollBar.pack(side="right", fill="y")
-
-            addMembers_canvas.configure(yscrollcommand=addMembers_scrollBar.set)
-
-            addMembers_frame = tk.Frame(addMembers_canvas)
-            addMembers_canvas.create_window((0, 0), anchor="nw", window=addMembers_frame)
-
-            def on_frame_configure(event):
-                addMembers_canvas.configure(scrollregion=addMembers_canvas.bbox("all"))
-
-            addMembers_frame.bind("<Configure>", on_frame_configure)
-
-            def on_canvas_configure(event):
-                addMembers_canvas.itemconfig(addMembers_canvas.create_window((0, 0), anchor='nw', window=addMembers_frame), width=event.width)
-
-            addMembers_canvas.bind("<Configure>", on_canvas_configure)
-
-
-            #now you can use addBooks_frame as your main screen. 
-
-
-
-
-
-
-
-
-          #delMembers Frame
-            delMembers_canvas = tk.Canvas(delMembers)
-            delMembers_canvas.pack(fill="both", expand=True, side="left")
-
-            delMembers_scrollBar = tk.Scrollbar(delMembers, orient="vertical", command=delMembers_canvas.yview)
-            delMembers_scrollBar.pack(side="right", fill="y")
-
-            delMembers_canvas.configure(yscrollcommand=delMembers_scrollBar.set)
-
-            delMembers_frame = tk.Frame(delMembers_canvas)
-            delMembers_canvas.create_window((0, 0), anchor="nw", window=delMembers_frame)
-
-            def on_frame_configure(event):
-                delMembers_canvas.configure(scrollregion=delMembers_canvas.bbox("all"))
-
-            delMembers_frame.bind("<Configure>", on_frame_configure)
-
-            def on_canvas_configure(event):
-                delMembers_canvas.itemconfig(delMembers_canvas.create_window((0, 0), anchor='nw', window=delMembers_frame), width=event.width)
-
-            delMembers_canvas.bind("<Configure>", on_canvas_configure)
-            
-
-            #now you can use delBooks_frame as your main screen. 
-
-
-
-
-
-
-            
-
-            
-
-            def switch_frame(frame,button):
-                viewBooks.pack_forget()
-                addBooks.pack_forget()
-                delBooks.pack_forget()
-                addMembers.pack_forget()
-                delMembers.pack_forget()
-                viewBooks_button.configure(bg='#45a049')
-                addBooks_button.configure(bg='#45a049')
-                delBooks_button.configure(bg='#45a049')
-                addMembers_button.configure(bg='#45a049')
-                delMembers_button.configure(bg='#45a049')
+        root=self.root
+        root=self.root
+        for child in root.winfo_children(): 
+            child.destroy()
+        self.root.minsize(900,500)    
+        # self.root.maxsize(00,420) 
+
+        
+        side_panel = tk.Frame(root, bg="#333333", width=200, height=500)
+        side_panel.pack(side="left", fill="y")
+        main_content = tk.Frame(root, bg="#f5f5f5")
+        main_content.pack(side="right", expand=True, fill="both")
+
+
+        # Side panel TAB BUTTONS
+        viewBooks_button = tk.Button(side_panel, text="View Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
+                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(viewBooks,"viewBooks"), bd=0)
+        viewBooks_button.pack(fill="both", pady=10)
+
+        addBooks_button = tk.Button(side_panel, text="Add Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
+                                activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(addBooks,"addBooks"), bd=0)
+        addBooks_button.pack(fill="x", pady=10)
+        
+        delBooks_button = tk.Button(side_panel, text="Remove Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
+                                activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(delBooks,"delBooks"), bd=0)
+        delBooks_button.pack(fill="x", pady=10)
+
+        addMembers_button = tk.Button(side_panel, text="Add Member", font=GUI.button_font, bg="#4CAF50", fg="white", 
+                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(addMembers,"addMembers"), bd=0)
+        addMembers_button.pack(fill="x", pady=10)
+        
+        delMembers_button = tk.Button(side_panel, text="Remove Member", font=GUI.button_font, bg="#4CAF50", fg="white", 
+                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(delMembers,'delMembers'), bd=0)
+        delMembers_button.pack(fill="x", pady=10)
+
+
+
+        #TABS CONTENT
+        viewBooks= tk.Frame(main_content, bg="#f5f5f5")
+        addBooks = tk.Frame(main_content, bg="#f5f5f5")
+        delBooks = tk.Frame(main_content, bg="#f5f5f5")
+        addMembers = tk.Frame(main_content, bg="#f5f5f5")
+        delMembers = tk.Frame(main_content, bg="#f5f5f5")
+        
+        for frame in (viewBooks,addBooks,addMembers,delBooks,delMembers):
+            frame.pack(fill="both", expand=True)
+
+
+        # ViewBooks Frame
                 
-                frame.pack(fill="both", expand=True)
-                exec( f"{button}_button.configure(bg='#215c52')")
-                print(frame)
+        viewBooks_canvas = tk.Canvas(viewBooks)
+        viewBooks_canvas.pack(fill="both", expand=True, side="left")
 
-            switch_frame(viewBooks,'viewBooks')
+        viewBooks_scrollBar = tk.Scrollbar(viewBooks, orient="vertical", command=viewBooks_canvas.yview)
+        viewBooks_scrollBar.pack(side="right", fill="y")
+
+        viewBooks_canvas.configure(yscrollcommand=viewBooks_scrollBar.set)
+
+        viewBooks_frame = tk.Frame(viewBooks_canvas)
+        viewBooks_canvas.create_window((0, 0), anchor="nw", window=viewBooks_frame)
+
+        def on_frame_configure(event):
+            viewBooks_canvas.configure(scrollregion=viewBooks_canvas.bbox("all"))
+
+        viewBooks_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            viewBooks_canvas.itemconfig(viewBooks_canvas.create_window((0, 0), anchor='nw', window=viewBooks_frame), width=event.width)
+
+        viewBooks_canvas.bind("<Configure>", on_canvas_configure)
+
+
+
+
+        def display_books_function(dict):
+            for bookID in dict.keys():
+                self.book_component(viewBooks_frame,dict[bookID])
+
+        books_dict=CSV.loadBooks()
+        display_books_function(books_dict)
+
+        
+        
+
+        
+
+
+
+
+
+
+        #addBooks Frame
+        addBooks_canvas = tk.Canvas(addBooks)
+        addBooks_canvas.pack(fill="both", expand=True, side="left")
+
+        addBooks_scrollBar = tk.Scrollbar(addBooks, orient="vertical", command=addBooks_canvas.yview)
+        addBooks_scrollBar.pack(side="right", fill="y")
+
+        addBooks_canvas.configure(yscrollcommand=addBooks_scrollBar.set)
+
+        addBooks_frame = tk.Frame(addBooks_canvas)
+        addBooks_canvas.create_window((0, 0), anchor="nw", window=addBooks_frame)
+
+        def on_frame_configure(event):
+            addBooks_canvas.configure(scrollregion=addBooks_canvas.bbox("all"))
+
+        addBooks_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            addBooks_canvas.itemconfig(addBooks_canvas.create_window((0, 0), anchor='nw', window=addBooks_frame), width=event.width)
+
+        addBooks_canvas.bind("<Configure>", on_canvas_configure)
+
+        #now you can use addBooks_frame as your main screen. 
+
+
+
+
+
+
+
+
+        #delBooks Frame
+        delBooks_canvas = tk.Canvas(delBooks)
+        delBooks_canvas.pack(fill="both", expand=True, side="left")
+
+        delBooks_scrollBar = tk.Scrollbar(delBooks, orient="vertical", command=delBooks_canvas.yview)
+        delBooks_scrollBar.pack(side="right", fill="y")
+
+        delBooks_canvas.configure(yscrollcommand=delBooks_scrollBar.set)
+
+        delBooks_frame = tk.Frame(delBooks_canvas)
+        delBooks_canvas.create_window((0, 0), anchor="nw", window=delBooks_frame)
+
+        def on_frame_configure(event):
+            delBooks_canvas.configure(scrollregion=delBooks_canvas.bbox("all"))
+
+        delBooks_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            delBooks_canvas.itemconfig(delBooks_canvas.create_window((0, 0), anchor='nw', window=delBooks_frame), width=event.width)
+
+        delBooks_canvas.bind("<Configure>", on_canvas_configure)
+
+        #now you can use delBooks_frame as your main screen. 
+
+
+
+
+
+
+    #addMembers Frame
+        addMembers_canvas = tk.Canvas(addMembers)
+        addMembers_canvas.pack(fill="both", expand=True, side="left")
+
+        addMembers_scrollBar = tk.Scrollbar(addMembers, orient="vertical", command=addMembers_canvas.yview)
+        addMembers_scrollBar.pack(side="right", fill="y")
+
+        addMembers_canvas.configure(yscrollcommand=addMembers_scrollBar.set)
+
+        addMembers_frame = tk.Frame(addMembers_canvas)
+        addMembers_canvas.create_window((0, 0), anchor="nw", window=addMembers_frame)
+
+        def on_frame_configure(event):
+            addMembers_canvas.configure(scrollregion=addMembers_canvas.bbox("all"))
+
+        addMembers_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            addMembers_canvas.itemconfig(addMembers_canvas.create_window((0, 0), anchor='nw', window=addMembers_frame), width=event.width)
+
+        addMembers_canvas.bind("<Configure>", on_canvas_configure)
+
+
+        #now you can use addBooks_frame as your main screen. 
+
+
+
+
+
+
+
+
+        #delMembers Frame
+        delMembers_canvas = tk.Canvas(delMembers)
+        delMembers_canvas.pack(fill="both", expand=True, side="left")
+
+        delMembers_scrollBar = tk.Scrollbar(delMembers, orient="vertical", command=delMembers_canvas.yview)
+        delMembers_scrollBar.pack(side="right", fill="y")
+
+        delMembers_canvas.configure(yscrollcommand=delMembers_scrollBar.set)
+
+        delMembers_frame = tk.Frame(delMembers_canvas)
+        delMembers_canvas.create_window((0, 0), anchor="nw", window=delMembers_frame)
+
+        def on_frame_configure(event):
+            delMembers_canvas.configure(scrollregion=delMembers_canvas.bbox("all"))
+
+        delMembers_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            delMembers_canvas.itemconfig(delMembers_canvas.create_window((0, 0), anchor='nw', window=delMembers_frame), width=event.width)
+
+        delMembers_canvas.bind("<Configure>", on_canvas_configure)
+        
+
+        #now you can use delBooks_frame as your main screen. 
+
+
+
+
+
+
+        
+
+        
+
+        def switch_frame(frame,button):
+            viewBooks.pack_forget()
+            addBooks.pack_forget()
+            delBooks.pack_forget()
+            addMembers.pack_forget()
+            delMembers.pack_forget()
+            viewBooks_button.configure(bg='#45a049')
+            addBooks_button.configure(bg='#45a049')
+            delBooks_button.configure(bg='#45a049')
+            addMembers_button.configure(bg='#45a049')
+            delMembers_button.configure(bg='#45a049')
+            
+            frame.pack(fill="both", expand=True)
+            exec( f"{button}_button.configure(bg='#215c52')")
+            print(frame)
+
+        switch_frame(viewBooks,'viewBooks')
+
+
+
+
+    @staticmethod
+    def alert(title,message):    
+        messagebox.showerror(title, message)
+
+    @staticmethod
+    def success(title,message):
+        messagebox.showinfo(title,message)
+
+    
