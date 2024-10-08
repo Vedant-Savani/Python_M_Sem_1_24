@@ -1,128 +1,182 @@
-class OutofStockError(Exception):
-
-    def __init__(self) -> None:
-        pass
+import CSV_Handler as csvh
 
 class MissingDetailsError(Exception):
-
     def __init__(self) -> None:
         pass
+
+class BookNotInStockError(Exception):
+    def __init__(self) -> None:
+        pass
+
+class OutOfStockError(Exception):
+    def __init__(self) -> None:
+        pass
+
+class BorrowLimitReachedError(Exception):
+    def __init__(self) -> None:
+        pass
+
+class BookNotBorrowedError(Exception):
+    def __init__(self) -> None:
+        pass
+
 
 class Books:
 
     bookDetails = {}
 
+    #format of dict :   { 'bookID' : { 'name': <> , 'author':<> , 'total':<> , 'available':<> , 'bin':<> , 'borrowers': [ 'rollnumber1','rollnumber2']  } }
+
     def __init__(self) -> None:
         pass
 
-    def addBook(self, bookDetails : dict) -> dict:
+    def addBook(self, book : dict) -> None:
 
-        #input dictionary format = {<bookID> : {'name' : '' , 'total' : <int>, 'available' : <int>, 'binNo' : '', 'borrowers' : []}}
+        bookID = list(book.keys())[0] #collects bookID
+        bookInfo = book[bookID] #collects book information
+        
+        try:
+            if book == {} or (bookInfo[key] == '' for key in list(bookInfo.keys())): #if any detail is missing
+                raise MissingDetailsError
 
-        bookID = list(bookDetails.keys())[0]
-        bookInfo = bookDetails[bookID]
+            elif bookID not in list(Books.bookDetails.keys()): #if book is not already present
+                Books.bookDetails[bookID] = {
+                    'name' : bookInfo['name'],
+                    'author' : bookInfo['author'],
+                    'total' : bookInfo['total'],
+                    'available' : bookInfo['available'],
+                    'bin' : bookInfo['bin'],
+                    'borrowers' : bookInfo['borrowers']
+                }
+
+            else: #if book is already present
+                print('BOOK ALREADY PRESENT! STOCK UPDATED!')
+                Books.bookDetails[bookID]['total'] += 1 #update stock
+                Books.bookDetails[bookID]['available'] += 1 #update available quantity
+
+        except MissingDetailsError:
+            print('MISSING DETAILS!')
+ 
+        finally: #after handling all errors/tasks
+            csvh.CSV_Handler.updateBooks(Books.bookDetails)  #update the CSV file
+
+
+#************************************************************************
+
+    def removeBook(self, bookID : str) -> None:
 
         try:
-            Books.bookDetails[bookID] = {
-                'name' : bookInfo['name'],
-                'total' : bookInfo['total'],
-                'available' : bookInfo['available'],
-                'binNo' : bookInfo['binNo'],
-                'borrowers' : bookInfo['borrowers']
-            }
+            if bookID == '':
+                raise MissingDetailsError
 
-        except:
-            print('Missing details!')
+            elif bookID not in list(Books.bookDetails.keys()): #if book is not stocked in library
+                raise BookNotInStockError
+            
+            else: #if book is stocked
+                del Books.bookDetails[bookID]
 
-        finally:
-            return Books.bookDetails
-        
+        except MissingDetailsError:
+            print('MISSING DETAILS!')
+
+        except BookNotInStockError:
+            print('BOOK NOT YET STOCKED!')
+
+        finally: #after all errors/tasks have been handled
+            csvh.CSV_Handler.updateBooks(Books.bookDetails) #update CSV file
+
 
 #**********************************************************************
 
 
-    def removeBook(self, bookID : str) -> dict:
+    def borrowBook(self, bookID : str, borrower : str) -> None:
 
         try:
-            del Books.bookDetails[bookID]
-        
-        except:
-            print('Book not yet stocked!')
-
-        finally:
-            return Books.bookDetails
-        
-
-#***********************************************************************
-        
-
-    def borrowBook(self, bookID : str, borrower : str) -> dict:
-
-        try:
-
-            if borrower == '' or bookID == '':
+            if bookID == '' or borrower == '': #if any detail is missing
                 raise MissingDetailsError
-
-            if Books.bookDetails[bookID]['available'] > 0:
+            
+            elif bookID not in list(Books.bookDetails.keys()): #if book is not stocked in library
+                raise BookNotInStockError
+            
+            elif borrower in Books.bookDetails[bookID]['borrowers']: #if the same user has already borrowed this book
+                raise BorrowLimitReachedError
+        
+            elif Books.bookDetails[bookID]['available'] == 0: #if book is out of stock
+                raise OutOfStockError
+        
+            else: #if nothing goes wrong
                 Books.bookDetails[bookID]['available'] -= 1
                 Books.bookDetails[bookID]['borrowers'].append(borrower)
 
-            else:
-                raise OutofStockError
-            
-        except MissingDetailsError:
-            print('Details Missing!')
-            
-        except OutofStockError:
-            print('Book out of stock!')
+        except MissingDetailsError: #if details are missing
+            print('MISSING DETAILS!')
 
-        except:
-            print('Book not yet stocked!')
+        except BookNotInStockError: #if book is not stocked in library
+            print('BOOK NOT YET STOCKED!')
 
-        finally:
-            return Books.bookDetails
-        
+        except BorrowLimitReachedError: #if the same user has already borrowed this book
+            print('CANNOT BORROW SAME BOOK MORE THAN ONCE!')
 
-#**********************************************************************
-        
-    
-    def returnBook(self, bookID : str, borrower):
+        except OutOfStockError: #if book is out of stock
+            print('BOOK OUT OF STOCK!')
+
+        finally: #after all errors/tasks have been handled
+            csvh.CSV_Handler.updateBooks(Books.bookDetails)
+
+
+#*********************************************************************
+
+
+    def returnBook(self, bookID : str, borrower : str) -> None:
 
         try:
-
-            if borrower == '' or bookID == '':
+            if bookID == '' or borrower == '': #if any detail is missing
                 raise MissingDetailsError
+
+            elif bookID not in list(Books.bookDetails.keys()): #if book is not stocked in library
+                raise BookNotInStockError
             
-            Books.bookDetails[bookID]['available'] += 1
-            Books.bookDetails[bookID]['borrowers'].remove(borrower)
+            elif borrower not in Books.bookDetails[bookID]['borrowers']: #if user has not borrowed this book
+                raise BookNotBorrowedError
+            
+            else: #if nothing goes wrong
+                Books.bookDetails[bookID]['available'] += 1
+                Books.bookDetails[bookID]['borrowers'].remove(borrower)
 
-        except MissingDetailsError:
-            print('Details Missing!')
+        except MissingDetailsError: #if details are missing
+            print('MISSING DETAILS!')  
 
-        except:
-            print('Book not yet stocked!')
+        except BookNotInStockError: #if book is not stocked in library
+            print('BOOK NOT YET STOCKED!')  
+
+        except OutOfStockError: #if book is out of stock
+            print('BOOK OUT OF STOCK!')
+
+        finally: #after all errors/tasks have been handled
+            csvh.CSV_Handler.updateBooks(Books.bookDetails)
 
 
+#**********************************************************************         
         
-    def __str__(self) -> dict:
+    def __str__(self) -> str:
         return str(Books.bookDetails)
-    
-
+            
 #***********************************************************************
+
+
         
     
-def main() -> int:
+def main() -> int: #test cases
 
     books = Books()
 
-    Books.bookDetails = {'abc123':{'name' : 'ABC', 'total' : 5, 'available' : 5, 'binNo' : 'k123', 'borrowers' : ['Vedant', 'Sankalp']},
-                         'def123':{'name' : 'DEF', 'total' : 5, 'available' : 5, 'binNo' : 'p123', 'borrowers' : ['Anish','Aryan']}}
+    Books.bookDetails = {'abc123':{'name' : 'ABC', 'total' : 5, 'author': 'Anish', 'available' : 5, 'bin' : 'k123', 'borrowers' : ['Vedant', 'Sankalp']},
+                         'def123':{'name' : 'DEF', 'total' : 5, 'author' : 'Teja','available' : 5, 'bin' : 'p123', 'borrowers' : ['Aryan']}}
     
     print(books)
 
     books.addBook({'xyz123' : {}})
 
-    books.addBook({'xyz123' : {'name' : 'XYZ', 'total' : 5, 'available' : 5, 'binNo' : 'q123', 'borrowers' : ['Anish', 'Teja', 'Bramha']}})
+    books.addBook({'xyz123' : {'name' : 'XYZ', 'total' : 5, 'author' : 'Bramha', 'available' : 5, 'bin' : 'q123', 'borrowers' : ['Anish', 'Teja', 'Bramha']}})
 
     print(books)
 
