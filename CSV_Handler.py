@@ -1,5 +1,5 @@
 import csv
-
+from encryption import Encryption as E
 class CSV_Handler:   
     
     #nested Dictionary
@@ -24,7 +24,7 @@ class CSV_Handler:
         with open('members.csv', mode ='r')as file:
             reader = csv.reader(file)
             for row in reader:    #format of row in CSV file: Roll Number , Name , Password , Books Issued <seperated by " "spaces>
-                dict[row[0]]={'name':row[1] , 'password':row[2] , 'books':row[3].strip().split(" ")}       
+                dict[row[0]]={'name':row[1] , 'password':E.decrypt(row[2]) , 'books':row[3].strip().split(" ")}       
         return dict
     
 
@@ -56,5 +56,10 @@ class CSV_Handler:
                 books=''
                 for book in dict[key]['books']:
                     books+=book+" "
-                row=[key,dict[key]['name'],dict[key]['password'],books]
+                row=[key,dict[key]['name'],E.encrypt(dict[key]['password']),books]
                 writer.writerow(row)            
+
+
+# if __name__=="__main__":
+    # CSV_Handler.updateMembers({"BT2024212":{'name':"Aryan",'password':"Aryan123@",'books':["873tr82gh"]}})
+    # print(CSV_Handler.loadMembers())
