@@ -15,9 +15,10 @@ class GUI:
     content_font=("Helvetica",10)
 
 
-    def __init__(self,root):
+    def __init__(self,root,books):
         
-        self.root=root 
+        self.root=root
+        self.bookObj=books 
 
     def welcome_page(self):
 
@@ -158,7 +159,7 @@ class GUI:
 
 
 
-    def sudent_dashboard_page(self):
+    def student_dashboard_page(self):
         root=self.root
         root=self.root
         for child in root.winfo_children(): 
@@ -274,7 +275,7 @@ class GUI:
         switch_frame(viewBooks)
 
 
-    def book_component(self,frame,bookdict):
+    def admin_book_component(self,frame,bookdict):
         mainbox=tk.Frame(frame,border=1,relief='solid')
         mainbox.pack(fill='x',pady=5)
         title=tk.Label(mainbox,text=bookdict['name'],font=GUI.label_font)
@@ -285,6 +286,14 @@ class GUI:
         total.pack(anchor='w')
         bin=tk.Label(mainbox,text="Bin: "+bookdict['bin'] ,font=GUI.content_font)
         bin.pack(anchor='w')
+        brs=""
+        for b in bookdict['borrowers']:
+            if(b!=""):
+                brs+=" , "+b
+            
+        borrowers=tk.Label(mainbox,text="Borrowers: "+brs ,font=GUI.content_font)
+        borrowers.pack(anchor='w')
+        
 
 
 
@@ -304,6 +313,8 @@ class GUI:
         main_content = tk.Frame(root, bg="#f5f5f5")
         main_content.pack(side="right", expand=True, fill="both")
 
+
+#==============================================================================================================================
 
         # Side panel TAB BUTTONS
         viewBooks_button = tk.Button(side_panel, text="View Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
@@ -328,6 +339,8 @@ class GUI:
 
 
 
+#==============================================================================================================================
+
         #TABS CONTENT
         viewBooks= tk.Frame(main_content, bg="#f5f5f5")
         addBooks = tk.Frame(main_content, bg="#f5f5f5")
@@ -338,6 +351,8 @@ class GUI:
         for frame in (viewBooks,addBooks,addMembers,delBooks,delMembers):
             frame.pack(fill="both", expand=True)
 
+
+#==============================================================================================================================
 
         # ViewBooks Frame
                 
@@ -366,11 +381,13 @@ class GUI:
 
 
         def display_books_function(dict):
+            for i in viewBooks_frame.winfo_children():
+                i.destroy()
             for bookID in dict.keys():
-                self.book_component(viewBooks_frame,dict[bookID])
+                self.admin_book_component(viewBooks_frame,dict[bookID])
 
-        books_dict=CSV.loadBooks()
-        display_books_function(books_dict)
+        
+        display_books_function(self.bookObj.bookDetails)
 
         
         
@@ -379,6 +396,7 @@ class GUI:
 
 
 
+#==============================================================================================================================
 
 
 
@@ -406,10 +424,68 @@ class GUI:
 
         #now you can use addBooks_frame as your main screen. 
 
+        def submit_form():
+            book_id = entry_book_id.get()
+            name = entry_name.get()
+            author = entry_author.get()
+            total = entry_total.get()
+            available = entry_available.get()
+            binNO = entry_bin.get()
+
+            if not (book_id and name and author and total.isdigit() and available.isdigit()):
+                messagebox.showerror("Input Error", "Please enter valid details in all fields!")
+                return
+
+            self.bookObj.addBook({book_id:{'name':name,'author':author,'total':total,'available':available,'bin':binNO,'borrowers':[]}})    
+
+
+        header_label = tk.Label(addBooks_frame, text="Add Books", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
+        header_label.pack(pady=10)
+
+        label_book_id = tk.Label(addBooks_frame, text="Book ID:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_book_id.pack(pady=5)
+        entry_book_id = tk.Entry(addBooks_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_book_id.pack(pady=5)
+
+        label_name = tk.Label(addBooks_frame, text="Name:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_name.pack(pady=5)
+        entry_name = tk.Entry(addBooks_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_name.pack(pady=5)
+
+        label_author = tk.Label(addBooks_frame, text="Author:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_author.pack(pady=5)
+        entry_author = tk.Entry(addBooks_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_author.pack(pady=5)
+
+        label_total = tk.Label(addBooks_frame, text="Total Copies:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_total.pack(pady=5)
+        entry_total = tk.Entry(addBooks_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_total.pack(pady=5)
+
+        label_available = tk.Label(addBooks_frame, text="Available Copies:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_available.pack(pady=5)
+        entry_available = tk.Entry(addBooks_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_available.pack(pady=5)
+      
+        label_bin = tk.Label(addBooks_frame, text="Bin Number:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_bin.pack(pady=5)
+        entry_bin = tk.Entry(addBooks_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_bin.pack(pady=5)
+
+        # Submit button with the theme applied
+        submit_button = tk.Button(addBooks_frame, text="Submit", font=GUI.button_font, bg="#4CAF50", fg="white",
+                                activebackground="#45a049", activeforeground="white", padx=20, pady=10, bd=0, 
+                                command=submit_form)
+        submit_button.pack(pady=20)
+
+
+
+        
 
 
 
 
+#==============================================================================================================================
 
 
 
@@ -439,6 +515,7 @@ class GUI:
 
 
 
+#==============================================================================================================================
 
 
 
@@ -470,6 +547,7 @@ class GUI:
 
 
 
+#==============================================================================================================================
 
 
 
@@ -504,6 +582,7 @@ class GUI:
 
 
 
+#==============================================================================================================================
         
 
         
@@ -520,6 +599,9 @@ class GUI:
             addMembers_button.configure(bg='#45a049')
             delMembers_button.configure(bg='#45a049')
             
+            if button=="viewBooks":
+                display_books_function(self.bookObj.bookDetails)
+
             frame.pack(fill="both", expand=True)
             exec( f"{button}_button.configure(bg='#215c52')")
             print(frame)
