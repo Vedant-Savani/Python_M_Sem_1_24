@@ -1,4 +1,6 @@
-from UI import*
+from CSV_Handler import CSV_Handler
+from UI import *
+from books import *
 import tkinter as tk
 from tkinter import ttk
 
@@ -8,8 +10,16 @@ root.title("Library Management System")
 root.geometry("500x300")
 root.config(bg="#f5f5f5") 
 
-GuiObj=GUI(root)
-GuiObj.welcome_page()
+
+BooksObj=Books()
+Books.bookDetails=CSV_Handler.loadBooks()
+GuiObj=GUI(root,BooksObj)
+
+print(BooksObj.bookDetails)
+GuiObj.admin_dashboard_page()
+
+# Books=Books()
+# Books.borrowBook("","")
 
 
 root.mainloop()
