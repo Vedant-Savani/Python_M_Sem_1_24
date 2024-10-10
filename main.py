@@ -15,11 +15,8 @@ BooksObj=Books()
 Books.bookDetails=CSV_Handler.loadBooks()
 GuiObj=GUI(root,BooksObj)
 
-print(BooksObj.bookDetails)
-GuiObj.admin_dashboard_page()
 
-# Books=Books()
-# Books.borrowBook("","")
+GuiObj.admin_dashboard_page()
 
 
 root.mainloop()
