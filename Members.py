@@ -1,6 +1,9 @@
 import CSV_Handler as csvh
 import UI as gui
 
+import Books as bk
+
+
 class MissingDetailsError(Exception):
     def __init__(self) -> None:
         pass
@@ -12,6 +15,9 @@ class MembershipDoesNotExistError(Exception):
 class Members:
 
     memberDetails = {}
+
+    bookObj = bk.Books()
+
 
     #format of dict :  { 'RollNumber' : { 'name':<name> , 'password':<pass> } }
 
