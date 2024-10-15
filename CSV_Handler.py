@@ -1,7 +1,9 @@
 import csv
 from encryption import Encryption as E
+
+
 class CSV_Handler:   
-    
+
     #nested Dictionary
     #format of dict :   { 'bookID' : { 'name': <> , 'author':<> , 'total':<> , 'available':<> , 'bin':<> , 'borrowers': [ 'rollnumber1','rollnumber2']  } }
     @staticmethod
@@ -13,21 +15,25 @@ class CSV_Handler:
                 dict[row[0]]={'name':row[1] , 'author':row[2] , 'total':row[3] , 'available':row[4]
                               ,'bin':row[5] , 'borrowers':row[6].strip().split(" ")}       
         return dict
-    
 
 
-    #nested Dictionary
-    #format of dict { "RollNumber" : { 'name':<name> , 'password':<pass> , 'books': ['BookID 1','BookID 2'] } }s
+#===============================================================================================================================================
+
+
+    #nested Dictionary 
+    #format of dict { "RollNumber" : { 'name':<name> , 'password':<pass> } }s
     @staticmethod
     def loadMembers():     #returns a dict containing information about memebers
         dict={}
         with open('members.csv', mode ='r')as file:
             reader = csv.reader(file)
             for row in reader:    #format of row in CSV file: Roll Number , Name , Password , Books Issued <seperated by " "spaces>
-                dict[row[0]]={'name':row[1] , 'password':E.decrypt(row[2]) , 'books':row[3].strip().split(" ")}       
+                dict[row[0]]={'name':row[1] , 'password':E.decrypt(row[2]) }       
         return dict
     
 
+
+#===============================================================================================================================================
 
 
     #takes a dict of books (in the format as specified above)
@@ -44,7 +50,7 @@ class CSV_Handler:
                 writer.writerow(row)
 
 
-
+#===============================================================================================================================================
 
     #takes a dict of memebers (in the format as specified above)
     #and updates the members.csv file
@@ -53,13 +59,6 @@ class CSV_Handler:
         with open('members.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
             for key in dict.keys():
-                books=''
-                for book in dict[key]['books']:
-                    books+=book+" "
-                row=[key,dict[key]['name'],E.encrypt(dict[key]['password']),books]
+                row=[key,dict[key]['name'],E.encrypt(dict[key]['password'])]
                 writer.writerow(row)            
 
-
-# if __name__=="__main__":
-    # CSV_Handler.updateMembers({"BT2024212":{'name':"Aryan",'password':"Aryan123@",'books':["873tr82gh"]}})
-    # print(CSV_Handler.loadMembers())
