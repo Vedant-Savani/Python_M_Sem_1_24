@@ -1,6 +1,6 @@
 from CSV_Handler import CSV_Handler
 from UI import *
-from books import *
+from Books import *
 import tkinter as tk
 from tkinter import ttk
 
