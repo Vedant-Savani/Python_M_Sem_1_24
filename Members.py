@@ -33,7 +33,7 @@ class Members:
             rollNo = list(details.keys())[0] #collects roll number
             memberInfo = details[rollNo] #collects name, password and books borrowed
             
-            keys = ('name', 'password') #must be present
+            keys = ('name', 'password') 
 
             for key in keys:
                 if key not in list(memberInfo.keys()) or memberInfo[key] == None: #if any detail is missing
