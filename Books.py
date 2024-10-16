@@ -94,7 +94,7 @@ class Books:
             
             else: #if book is stocked
                 del Books.bookDetails[bookID]
-                gui.GUI.success('Success!', f'Book with ID {bookID} Removed!')
+                gui.GUI.success('Success!', f'Book with ID \'{bookID}\' Removed!')
 
         except MissingDetailsError:
             gui.GUI.alert('Error','Missing Details!')
@@ -278,6 +278,10 @@ def main() -> int: #test cases
     books.addBook({'abcxyz' : {'name' : 'Demo Book', 'total' : 5, 'author' : 'Anish', 'available' : 5, 'bin' : 'K123', 'borrowers' : []}})
     books.borrowBook('abcxyz', 'IMT2024029')
     books.returnBook('abcxyz', 'IMT2024029')
+
+    books.addBook({'VedantID' : {'name' : 'Vedant', 'total' : 5, 'author' : 'Sankalp', 'available' : 5, 'bin' : 'BIN', 'borrowers' : []}})
+    books.borrowBook('abcxyz', 'Anish')
+    
 
     return 0
     
