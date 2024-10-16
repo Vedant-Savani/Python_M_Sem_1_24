@@ -94,7 +94,7 @@ class Books:
             
             else: #if book is stocked
                 del Books.bookDetails[bookID]
-                gui.GUI.success('Success!','Book Removed!')
+                gui.GUI.success('Success!', f'Book with ID {bookID} Removed!')
 
         except MissingDetailsError:
             gui.GUI.alert('Error','Missing Details!')
@@ -128,7 +128,7 @@ class Books:
             else: #if nothing goes wrong
                 Books.bookDetails[bookID]['available'] -= 1
                 Books.bookDetails[bookID]['borrowers'].append(borrower)
-                gui.GUI.success('Success!', 'Book Borrowed!')
+                gui.GUI.success('Success!', f'Book with ID {bookID} Borrowed!')
 
                 #{bookID : {rollNo : [dateBorrowed, dateReturned], rollNo : [dateBorrowed, dateReturned], ...}
 
