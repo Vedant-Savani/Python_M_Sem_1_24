@@ -12,7 +12,7 @@ class CSV_Handler:
         with open('books.csv', mode ='r')as file:
             reader = csv.reader(file)
             for row in reader:    #format of row in CSV file: BookID , Name , Author , total , available , bin , <borrowerRollNumber:data(dd/mm/yyyy) seperated by spaces>
-                dict[row[0]]={'name':row[1] , 'author':row[2] , 'total':row[3] , 'available':row[4]
+                dict[row[0]]={'name':row[1] , 'author':row[2] , 'total':row[3] , 'available':int(row[4])
                               ,'bin':row[5] , 'borrowers':row[6].strip().split(" ")}       
         return dict
 
@@ -73,6 +73,10 @@ class CSV_Handler:
 #       } 
 
 
+#{bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ],
+# bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ] }            
+
+
   
     @staticmethod
     def loadHistory():
@@ -80,14 +84,14 @@ class CSV_Handler:
         with open('history.csv', mode ='r')as file:
             reader = csv.reader(file)
             for row in reader:  
-                dict[row[0]]= {}
+                dict[row[0]]= []
                 for i in row[1].split(" "):
                     j=i.split("->")
                     roll=j[0]
                     k=j[1].split("~")
                     issued=k[0]
                     returned=k[1]
-                    dict[row[0]][roll]=[issued,returned]
+                    dict[row[0]].append({roll : [issued, returned]})
         return dict
     
 
@@ -97,9 +101,10 @@ class CSV_Handler:
         with open('history.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
             for key in dict.keys():
-                data=""
-                for key2 in dict[key].keys():
-                    data+=key2+"->"+str(dict[key][key2][0])+"~"+str(dict[key][key2][1])+" "
-                row=[key,data.strip()]
-                writer.writerow(row)   
+                data = ""
+                for infoDict in dict[key]:
+                    data += list(infoDict.keys())[0] + '->' + str(infoDict[list(infoDict.keys())[0]][0]) + '~' + str(infoDict[list(infoDict.keys())[0]][1]) + ' '                   
+
+                writer.writerow([key, data.strip()])   
+
 
