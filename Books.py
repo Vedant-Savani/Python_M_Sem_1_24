@@ -1,5 +1,6 @@
 import CSV_Handler as csvh
 import UI as gui
+import datetime as dt
 
 class MissingDetailsError(Exception):
     def __init__(self) -> None:
@@ -25,20 +26,24 @@ class BookNotBorrowedError(Exception):
 class Books:
 
     bookDetails = {}
+    bookHistory = {}
 
-    #format of dict :   { 'bookID' : { 'name': <> , 'author':<> , 'total':<> , 'available':<> , 'bin':<> , 'borrowers': [ 'rollnumber1','rollnumber2']  } }
+    #format of details dict :   { 'bookID' : { 'name': <> , 'author':<> , 'total':<> , 'available':<> , 'bin':<> , 'borrowers': [ 'rollnumber1','rollnumber2']  } }
+    #format of history dict: {bookID : {rollNo : [dateBorrowed, dateReturned], rollNo : [dateBorrowed, dateReturned], ...},
+    #                         bookID : {rollNo : [dateBorrowed, dateReturned], ...}                  
+
 
     def __init__(self) -> None:
-        Books.bookDetails = csvh.CSV_Handler.loadBooks()
+        pass
 
     def addBook(self, book : dict = {}) -> None:
+
+        bookID = list(book.keys())[0] #collects bookID
+        bookInfo = book[bookID] #collects book information
         
         try:
             if book == {}: #if nothing is passed
                 raise MissingDetailsError
-            
-            bookID = list(book.keys())[0] #collects bookID
-            bookInfo = book[bookID] #collects book information
 
             keys = ('name','author','total','available','bin', 'borrowers') #must be present
 
@@ -59,21 +64,22 @@ class Books:
 
                 gui.GUI.success('Success','Book Added!')
 
+
             else: #if book is already present
-                gui.GUI.success('Info','Book already present! Updated Stock!')
-                Books.bookDetails[bookID]['total'] += bookInfo['total'] #update stock
-                Books.bookDetails[bookID]['available'] += bookInfo['available'] #update available quantity
+                gui.GUI.success('Success','Book already present! Updated Stock!')
+                Books.bookDetails[bookID]['total'] += 1 #update stock
+                Books.bookDetails[bookID]['available'] += 1 #update available quantity
 
         except MissingDetailsError: #if any detail is missing
             gui.GUI.alert('Error','Missing Details!')
-
-        except TypeError:
-            gui.GUI.alert('Error','Wrong Information Entered!')
  
         finally: #after handling all errors/tasks
             csvh.CSV_Handler.updateBooks(Books.bookDetails)  #update the CSV file
+            print("FROM BOOK.PY ++>")
+            print(Books.bookDetails)
             
             
+
 
 #************************************************************************
 
@@ -94,17 +100,14 @@ class Books:
             gui.GUI.alert('Error','Missing Details!')
 
         except BookNotInStockError:
-            gui.GUI.alert('Error', 'Book not yet stocked!')
-
-        except TypeError:
-            gui.GUI.alert('Error','Wrong Information Entered!')
+            gui.GUI.alert('Error','Book not yet stocked!')
 
         finally: #after all errors/tasks have been handled
             csvh.CSV_Handler.updateBooks(Books.bookDetails) #update CSV file
             
 
 
-#************************************************************************
+#**********************************************************************
 
 
     def borrowBook(self, bookID : str = '', borrower : str = '') -> None:
@@ -114,7 +117,7 @@ class Books:
                 raise MissingDetailsError
             
             elif bookID not in list(Books.bookDetails.keys()): #if book is not stocked in library
-                raise BookNotInStockError()
+                raise BookNotInStockError
             
             elif borrower in Books.bookDetails[bookID]['borrowers']: #if the same user has already borrowed this book
                 raise BorrowLimitReachedError
@@ -126,6 +129,35 @@ class Books:
                 Books.bookDetails[bookID]['available'] -= 1
                 Books.bookDetails[bookID]['borrowers'].append(borrower)
                 gui.GUI.success('Success!', 'Book Borrowed!')
+
+                #{bookID : {rollNo : [dateBorrowed, dateReturned], rollNo : [dateBorrowed, dateReturned], ...}
+
+                if bookID in list(Books.bookHistory.keys()): #if bookID exists
+
+                    if borrower in list(Books.bookHistory[bookID].keys()): #if bookID and borrower exist
+                        Books.bookHistory[bookID][borrower][0] = dt.date.today()
+                        Books.bookHistory[bookID][borrower][1] = None
+
+                    else: #if bookID exists, but borrower does not exist
+                        Books.bookHistory[bookID][borrower] = []
+                        Books.bookHistory[bookID][borrower].append(dt.date.today())
+                        Books.bookHistory[bookID][borrower].append(None)
+                
+                else: #if bookID does not exist
+                    Books.bookHistory[bookID] = {}
+
+                    if borrower in list(Books.bookHistory[bookID].keys()): #if bookID does not exist, but borrower exists
+                        Books.bookHistory[bookID][borrower][0] = dt.date.today()
+                        Books.bookHistory[bookID][borrower][1] = None
+
+                    else: #if both bookID and borrower do not exist
+                        Books.bookHistory[bookID][borrower] = []
+                        Books.bookHistory[bookID][borrower].append(dt.date.today())
+                        Books.bookHistory[bookID][borrower].append(None)
+
+                csvh.CSV_Handler.updateHistory(Books.bookHistory)
+
+
 
         except MissingDetailsError: #if details are missing
             gui.GUI.alert('Error','Missing Details!')
@@ -139,69 +171,17 @@ class Books:
         except OutOfStockError: #if book is out of stock
             gui.GUI.alert('Error','Book out of stock!')
 
-        except TypeError:
-            gui.GUI.alert('Error','Wrong Information Entered!')
-
         finally: #after all errors/tasks have been handled
             csvh.CSV_Handler.updateBooks(Books.bookDetails)
             
 
+
 #*********************************************************************
 
 
-    def returnBook(self, bookIDs : list = [], borrower : str = '', booksNotBorrowed : list = [], booksNotInStock : list = []) -> None:
+    def returnBook(self, bookID : str = '', borrower : str = '') -> None:
 
         try:
-            if bookIDs == [] or borrower == '':
-                raise MissingDetailsError
-            
-            booksReturned = []
-            
-            for bookID in bookIDs:
-                if bookID not in list(Books.bookDetails.keys()):
-                    booksNotInStock.append(bookID)
-                
-                elif borrower not in Books.bookDetails[bookID]['borrowers']:
-                    booksNotBorrowed.append(bookID)
-                
-                else:
-                    Books.bookDetails[bookID]['available'] += 1
-                    Books.bookDetails[bookID]['borrowers'].remove(borrower)
-                    booksReturned.append(bookID)
-
-            if len(booksNotBorrowed) != 0:
-                #raise BookNotBorrowedError
-                gui.GUI.alert('Error', f'Books with IDs: {booksNotBorrowed} have not been borrowed yet!')
-                booksNotBorrowed.clear()
-            
-            if len(booksNotInStock) != 0:
-                #raise BookNotInStockError
-                gui.GUI.alert('Error!', f'Books with IDs: {booksNotInStock} have not been stocked yet!')
-                booksNotInStock.clear()
-            
-            if len(booksReturned) != 0:
-                gui.GUI.success('Success!', f'Books with IDs: {booksReturned} have been returned!')
-
-        
-        except MissingDetailsError: #if details are missing
-            gui.GUI.alert('Error!','Missing Details!')
-
-            '''except BookNotBorrowedError:
-            gui.GUI.alert('Error!', f'Books with IDs: {booksNotBorrowed} have not been borrowed yet!')
-
-            except BookNotInStockError:
-            gui.GUI.alert('Error!', f'Books with IDs: {booksNotInStock} have not yet been stocked!')'''
-
-        except TypeError:
-            gui.GUI.alert('Error!', 'Wrong information entered!')
-
-        finally:
-            csvh.CSV_Handler.updateBooks(Books.bookDetails)
-
-            
-
-
-        '''try:
             if bookID == '' or borrower == '': #if any detail is missing
                 raise MissingDetailsError
 
@@ -216,6 +196,8 @@ class Books:
                 Books.bookDetails[bookID]['borrowers'].remove(borrower)
                 gui.GUI.success('Success!','Book Returned!')
 
+                Books.bookHistory[bookID][borrower][1] = dt.date.today()
+
         except MissingDetailsError: #if details are missing
             gui.GUI.alert('Error','Missing Details!')
 
@@ -225,13 +207,12 @@ class Books:
         except BookNotBorrowedError: #if book has not been borrowed
             gui.GUI.alert('Error','Book not yet borrowed!')
 
-        except TypeError:
-            gui.GUI.alert('Error','Wrong Information Entered!')
-
         finally: #after all errors/tasks have been handled
-            csvh.CSV_Handler.updateBooks(Books.bookDetails)'''
-            
-            
+            csvh.CSV_Handler.updateBooks(Books.bookDetails)
+
+        
+        csvh.CSV_Handler.updateHistory(Books.bookHistory)
+
 
 
 #**********************************************************************         
@@ -248,14 +229,16 @@ def main() -> int: #test cases
 
     books = Books()
 
-    Books.bookDetails = {'abc123':{'name' : 'ABC', 'total' : 5, 'author': 'IMT00', 'available' : 5, 'bin' : 'k123', 'borrowers' : ['BT00', 'BT01']},
-                         'def123':{'name' : 'DEF', 'total' : 5, 'author' : 'IMT01','available' : 5, 'bin' : 'p123', 'borrowers' : []}}
+    '''
+
+    Books.bookDetails = {'abc123':{'name' : 'ABC', 'total' : 5, 'author': 'Anish', 'available' : 5, 'bin' : 'k123', 'borrowers' : ['Vedant', 'Sankalp']},
+                         'def123':{'name' : 'DEF', 'total' : 5, 'author' : 'Teja','available' : 5, 'bin' : 'p123', 'borrowers' : ['Aryan']}}
     
     print(books)
 
-    books.addBook()
     books.addBook({'xyz123' : {}})
-    books.addBook({'xyz123' : {'name' : 'XYZ', 'total' : 5, 'author' : 'IMT02', 'available' : 5, 'bin' : 'q123', 'borrowers' : ['IMT00', 'IMT01', 'IMT02']}})
+
+    books.addBook({'xyz123' : {'name' : 'XYZ', 'total' : 5, 'author' : 'Bramha', 'available' : 5, 'bin' : 'q123', 'borrowers' : ['Anish', 'Teja', 'Bramha']}})
 
     print(books)
 
@@ -265,29 +248,36 @@ def main() -> int: #test cases
     print(books)
 
     books.borrowBook('abc123')
-    books.borrowBook('abc123', 'IMT00')
+    books.borrowBook('abc123', 'Anish')
 
     print(books)
 
-    books.borrowBook('def123', 'IMT00')
-    books.borrowBook('def123', 'IMT00')
-    books.borrowBook('def123', 'IMT01')
-    books.borrowBook('def123', 'IMT02')
-    books.borrowBook('def123', 'IMT03')
-    books.borrowBook('def123', 'BT00')
-    books.borrowBook('def123', 'BT01')
+    books.borrowBook('def123', 'Anish')
+    books.borrowBook('def123', 'Anish')
+    books.borrowBook('def123', 'Teja')
+    books.borrowBook('def123', 'Bramha')
+    books.borrowBook('def123', 'Vedant')
+    books.borrowBook('def123', 'Aryan')
+    books.borrowBook('def123', 'Sankalp')
+    books.borrowBook('def123', 'Person')
+    books.borrowBook('def123', 'People')
 
     print(books)
 
     books.returnBook()
-    books.returnBook(['def'], 'IMT00')
-    books.returnBook(['def123','xyz123'], 'IMT00')
-    books.returnBook(['def123','xyz'], 'IMT00')
-    books.returnBook(['def123'], 'IMT00')
+    books.returnBook('def', 'Anish')
+    books.returnBook('def123', 'Anish')
+    books.returnBook('def123', 'Anish')
 
     print(books)
 
-    books.borrowBook('def123','IMT00')
+    books.borrowBook('def123','Anish')
+
+    '''
+
+    books.addBook({'abcxyz' : {'name' : 'Demo Book', 'total' : 5, 'author' : 'Anish', 'available' : 5, 'bin' : 'K123', 'borrowers' : []}})
+    books.borrowBook('abcxyz', 'IMT2024029')
+    books.returnBook('abcxyz', 'IMT2024029')
 
     return 0
     
