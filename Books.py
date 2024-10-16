@@ -29,8 +29,8 @@ class Books:
     bookHistory = {}
 
     #format of details dict :   { 'bookID' : { 'name': <> , 'author':<> , 'total':<> , 'available':<> , 'bin':<> , 'borrowers': [ 'rollnumber1','rollnumber2']  } }
-    #format of history dict: {bookID : {rollNo : [dateBorrowed, dateReturned], rollNo : [dateBorrowed, dateReturned], ...},
-    #                         bookID : {rollNo : [dateBorrowed, dateReturned], ...}                  
+    #{bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ],
+                # bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ] }
 
 
     def __init__(self) -> None:
@@ -128,32 +128,15 @@ class Books:
             else: #if nothing goes wrong
                 Books.bookDetails[bookID]['available'] -= 1
                 Books.bookDetails[bookID]['borrowers'].append(borrower)
-                gui.GUI.success('Success!', f'Book with ID {bookID} Borrowed!')
+                gui.GUI.success('Success!', f'Book with ID \'{bookID}\' Borrowed!')
 
-                #{bookID : {rollNo : [dateBorrowed, dateReturned], rollNo : [dateBorrowed, dateReturned], ...}
+                #{bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ],
+                # bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ] }
 
-                if bookID in list(Books.bookHistory.keys()): #if bookID exists
-
-                    if borrower in list(Books.bookHistory[bookID].keys()): #if bookID and borrower exist
-                        Books.bookHistory[bookID][borrower][0] = dt.date.today()
-                        Books.bookHistory[bookID][borrower][1] = None
-
-                    else: #if bookID exists, but borrower does not exist
-                        Books.bookHistory[bookID][borrower] = []
-                        Books.bookHistory[bookID][borrower].append(dt.date.today())
-                        Books.bookHistory[bookID][borrower].append(None)
-                
-                else: #if bookID does not exist
-                    Books.bookHistory[bookID] = {}
-
-                    if borrower in list(Books.bookHistory[bookID].keys()): #if bookID does not exist, but borrower exists
-                        Books.bookHistory[bookID][borrower][0] = dt.date.today()
-                        Books.bookHistory[bookID][borrower][1] = None
-
-                    else: #if both bookID and borrower does not exist
-                        Books.bookHistory[bookID][borrower] = []
-                        Books.bookHistory[bookID][borrower].append(dt.date.today())
-                        Books.bookHistory[bookID][borrower].append(None)
+                if bookID not in list(Books.bookHistory.keys()): #if book has not been modified yet
+                    Books.bookHistory[bookID] = []    
+                   
+                Books.bookHistory[bookID].append({borrower : [str(dt.date.today()), None]})
 
                 csvh.CSV_Handler.updateHistory(Books.bookHistory)
 
@@ -196,7 +179,13 @@ class Books:
                 Books.bookDetails[bookID]['borrowers'].remove(borrower)
                 gui.GUI.success('Success!','Book Returned!')
 
-                Books.bookHistory[bookID][borrower][1] = dt.date.today()
+                #{bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ],
+                # bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ] }
+
+                for bookID in list(Books.bookHistory.keys()):
+                    for infoDict in Books.bookHistory[bookID]:
+                        if infoDict[list(infoDict.keys())[0]][1] == None:
+                            infoDict[list(infoDict.keys())[0]][1] = str(dt.date.today())
 
         except MissingDetailsError: #if details are missing
             gui.GUI.alert('Error','Missing Details!')
@@ -281,6 +270,10 @@ def main() -> int: #test cases
 
     books.addBook({'VedantID' : {'name' : 'Vedant', 'total' : 5, 'author' : 'Sankalp', 'available' : 5, 'bin' : 'BIN', 'borrowers' : []}})
     books.borrowBook('abcxyz', 'Anish')
+    books.returnBook('abcxyz', 'Anish')
+
+    books.borrowBook('abcxyz', 'Anish')
+
     
 
     return 0
