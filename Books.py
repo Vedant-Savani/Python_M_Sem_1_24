@@ -182,9 +182,9 @@ class Books:
                 #{bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ],
                 # bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ], bookID : [ {<roll>:[bd,rd]} ,  {<roll>:[bd,rd]} ] }
 
-                for bookID in list(Books.bookHistory.keys()):
-                    for infoDict in Books.bookHistory[bookID]:
-                        if infoDict[list(infoDict.keys())[0]][1] == None and borrower == list(infoDict.keys())[0]:
+                for bookIDs in list(Books.bookHistory.keys()):
+                    for infoDict in Books.bookHistory[bookIDs]:
+                        if infoDict[list(infoDict.keys())[0]][1] == None and borrower == list(infoDict.keys())[0] and bookIDs == bookID:
                             infoDict[list(infoDict.keys())[0]][1] = str(dt.date.today())
                             
 
