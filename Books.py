@@ -184,8 +184,9 @@ class Books:
 
                 for bookID in list(Books.bookHistory.keys()):
                     for infoDict in Books.bookHistory[bookID]:
-                        if infoDict[list(infoDict.keys())[0]][1] == None:
+                        if infoDict[list(infoDict.keys())[0]][1] == None and borrower == list(infoDict.keys())[0]:
                             infoDict[list(infoDict.keys())[0]][1] = str(dt.date.today())
+                            
 
         except MissingDetailsError: #if details are missing
             gui.GUI.alert('Error','Missing Details!')
@@ -266,13 +267,13 @@ def main() -> int: #test cases
 
     books.addBook({'abcxyz' : {'name' : 'Demo Book', 'total' : 5, 'author' : 'Anish', 'available' : 5, 'bin' : 'K123', 'borrowers' : []}})
     books.borrowBook('abcxyz', 'IMT2024029')
-    books.returnBook('abcxyz', 'IMT2024029')
+    # books.returnBook('abcxyz', 'IMT2024029')
 
     books.addBook({'VedantID' : {'name' : 'Vedant', 'total' : 5, 'author' : 'Sankalp', 'available' : 5, 'bin' : 'BIN', 'borrowers' : []}})
     books.borrowBook('abcxyz', 'Anish')
+    books.returnBook('abcxyz', 'IMT2024029')
     books.returnBook('abcxyz', 'Anish')
-
-    books.borrowBook('abcxyz', 'Anish')
+    # books.borrowBook('abcxyz', 'Anish')
 
     
 
