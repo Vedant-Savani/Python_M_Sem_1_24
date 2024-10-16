@@ -150,7 +150,7 @@ class Books:
                         Books.bookHistory[bookID][borrower][0] = dt.date.today()
                         Books.bookHistory[bookID][borrower][1] = None
 
-                    else: #if both bookID and borrower do not exist
+                    else: #if both bookID and borrower does not exist
                         Books.bookHistory[bookID][borrower] = []
                         Books.bookHistory[bookID][borrower].append(dt.date.today())
                         Books.bookHistory[bookID][borrower].append(None)
