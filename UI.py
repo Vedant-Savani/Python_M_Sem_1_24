@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from CSV_Handler import CSV_Handler as CSV
-
+from PIL import Image, ImageTk 
+from members import Members
 
 class GUI:
 
@@ -17,10 +18,11 @@ class GUI:
 
 #===============================================================================================================================================
 
-    def __init__(self,root,books):
+    def __init__(self,root,books,memebrs):
         
         self.root=root
         self.bookObj=books 
+        self.membersObj=memebrs
 
 #===============================================================================================================================================
 
@@ -93,11 +95,14 @@ class GUI:
             if not(roll) or not (paswd):
                 messagebox.showerror("Empty", "Fields Can Not Be Empty!")
 
-            elif roll=="000" and paswd=="000":
-                self.sudent_dashboard_page()
-            
             else:
-                messagebox.showerror("Login Error", "Invalid Username Or Password!")
+                try:
+                    if self.membersObj.memberDetails[roll]['password']==paswd:
+                        self.student_dashboard_page(roll)
+                    else:
+                        self.alert("Error","INVALID CREDENTIALS !!")
+                except:
+                    self.alert("Error","INVALID CREDENTIALS !!")
 
         header_label = tk.Label(root, text="Student Login", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
         header_label.pack(pady=10)
@@ -133,10 +138,18 @@ class GUI:
         for child in root.winfo_children(): 
             child.destroy()
         self.root.minsize(500,420)    
-        self.root.maxsize(500,420) 
 
         def backClicked():
             self.welcome_page()   
+
+
+        def adminlogin():
+            username=entry_username.get()
+            passwd=entry_password.get()
+            if(username=="admin" and passwd=="123"):
+                self.admin_dashboard_page()
+            else:
+                self.alert("Error","Wrong Credentials!")    
 
         header_label = tk.Label(root, text="Admin Login", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
         header_label.pack(pady=10)
@@ -153,7 +166,7 @@ class GUI:
 
         login_button = tk.Button(root, text="Login", font=GUI.button_font, bg="#4CAF50", fg="white", 
                                 activebackground="#45a049", activeforeground="white", padx=20, pady=10, bd=0, 
-                                )
+                                command=adminlogin)
         login_button.pack(pady=10)
 
         back_button = tk.Button(root, text="Back", font=GUI.button_font2, bg="#4CAF50", fg="white", 
@@ -167,7 +180,7 @@ class GUI:
 #===============================================================================================================================================
 
 
-    def student_dashboard_page(self):
+    def student_dashboard_page(self,rollnumber):
         root=self.root
         root=self.root
         for child in root.winfo_children(): 
@@ -175,31 +188,64 @@ class GUI:
         self.root.minsize(900,500)    
 
         
+        
+        def switch_frame(frame,button):
+
+            viewBooks.pack_forget()
+            myBooks.pack_forget()
+            profile.pack_forget()
+            viewBooks_button.configure(bg='#45a049')
+            myBooks_button.configure(bg='#45a049')
+            profile_button.configure(bg='#45a049')
+            
+            if button=="viewBooks":
+                display_books_function(self.bookObj.bookDetails)
+
+            frame.pack(fill="both", expand=True)
+            exec( f"{button}_button.configure(bg='#215c52')")
+            update_mybooks_frame()
+            display_books_function(self.bookObj.bookDetails)
+
+
         side_panel = tk.Frame(root, bg="#333333", width=200, height=500)
         side_panel.pack(side="left", fill="y")
         main_content = tk.Frame(root, bg="#f5f5f5")
         main_content.pack(side="right", expand=True, fill="both")
 
+        def logout():
+            self.welcome_page()
+            
+
+
         # Side panel TAB BUTTONS
         viewBooks_button = tk.Button(side_panel, text="View Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(viewBooks), bd=0)
+                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(viewBooks,'viewBooks'), bd=0)
         viewBooks_button.pack(fill="both", pady=10)
 
         myBooks_button = tk.Button(side_panel, text="My Books", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(myBooks_frame), bd=0)
+                                activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(myBooks,'myBooks'), bd=0)
         myBooks_button.pack(fill="x", pady=10)
 
         profile_button = tk.Button(side_panel, text="Profile", font=GUI.button_font, bg="#4CAF50", fg="white", 
-                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(profile_frame), bd=0)
+                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(profile,'profile'), bd=0)
         profile_button.pack(fill="x", pady=10)
+        
+
+        def logout():
+            self.welcome_page()
+            
+
+        logout_button = tk.Button(side_panel, text="Log Out", font=GUI.button_font,bg="#bd2d2d", fg="white",
+                                activebackground="#f12d2d", activeforeground="white", command=logout, bd=0)
+        logout_button.pack(fill="x", pady=10)
 
 
 
         #TABS CONTENT
         viewBooks= tk.Frame(main_content, bg="#f5f5f5")
-        profile_frame = tk.Frame(main_content, bg="#f5f5f5")
-        myBooks_frame = tk.Frame(main_content, bg="#f5f5f5")
-        for frame in (profile_frame, myBooks_frame, viewBooks):
+        profile = tk.Frame(main_content, bg="#f5f5f5")
+        myBooks = tk.Frame(main_content, bg="#f5f5f5")
+        for frame in (profile, myBooks, viewBooks):
             frame.pack(fill="both", expand=True)
 
 
@@ -230,11 +276,98 @@ class GUI:
 
 
 
-        books_dict=CSV.loadBooks()
-        for bookID in books_dict.keys():
-           
-            self.book_component(viewBooks_frame,books_dict[bookID])
+        def search():
+
+            search_type=dropdown_var.get()
+            required_items=[]
+            if(search_type=="Author"):
+               
+                aut=entry.get().strip()
+                
+                if not aut :
+                    GUI.alert("Error","Seach field is empty!")
+                    return
+                for i in self.bookObj.bookDetails.keys():
+                    if aut.strip().lower() in self.bookObj.bookDetails[i]['author'].lower():
+                        required_items.append((i,self.bookObj.bookDetails[i]))
+                
+                c=0
+                for i in viewBooks_frame.winfo_children():
+                    if c==0:
+                        c=1
+                        continue
+                    i.destroy()
+                if len(required_items)==0:
+                    GUI.alert("...","No Results Found!")
+                else:
+                    for items in required_items:        
+                        self.student_book_component_view(viewBooks_frame,items[1],items[0],rollnumber,display_books_function)
+
+
+            elif(search_type=="Title"):
+               
+                aut=entry.get().strip()
+                
+                if not aut :
+                    GUI.alert("Error","Seach field is empty!")
+                    return
+                for i in self.bookObj.bookDetails.keys():
+                    if aut.strip().lower() in self.bookObj.bookDetails[i]['name'].lower():
+                        required_items.append((i,self.bookObj.bookDetails[i]))
+                
+                c=0
+                for i in viewBooks_frame.winfo_children():
+                    if c==0:
+                        c=1
+                        continue
+                    i.destroy()
+                
+                if len(required_items)==0:
+                    GUI.alert("...","No Results Found!")               
+                else:
+                    for items in required_items:        
+                        self.student_book_component_view(viewBooks_frame,items[1],items[0],rollnumber,display_books_function)
+                
+            
+            else:
+                GUI.alert("ERROR","Something Went Wrong!")
+                return
+
+
+        viewBooks_search_frame = tk.Frame(viewBooks_frame)
+        viewBooks_search_frame.pack(pady=20) 
+
+        label = tk.Label(viewBooks_search_frame, text="Search by ", font=GUI.label_font)
+        label.pack(side=tk.LEFT, padx=5)
+
+        dropdown_var = tk.StringVar(viewBooks_search_frame)
+        dropdown_var.set("Title") 
         
+        options = ["Title" , "Author"]
+        dropdown_menu = tk.OptionMenu(viewBooks_search_frame, dropdown_var, *options)
+        dropdown_menu.pack(side=tk.LEFT,pady=10)
+        dropdown_menu.config(font=GUI.button_font,
+                                 padx=2, bd=1)
+
+        entry = tk.Entry(viewBooks_search_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry.pack(side=tk.LEFT, padx=5)
+
+        search_button = tk.Button(viewBooks_search_frame, text="Search", command=search,font=GUI.button_font, bg="#4CAF50", fg="white",
+                                activebackground="#45a049", activeforeground="white", padx=2, bd=0)
+        search_button.pack(side=tk.LEFT, padx=5)
+
+        def display_books_function(dict=self.bookObj.bookDetails):
+            c=0
+            for i in viewBooks_frame.winfo_children():
+                if c==0:
+                    c=1
+                    continue
+                i.destroy()
+            for bookID in dict.keys():
+                self.student_book_component_view(viewBooks_frame,dict[bookID],bookID,rollnumber,display_books_function)
+
+            
+        display_books_function(self.bookObj.bookDetails)
 
         
 
@@ -244,10 +377,68 @@ class GUI:
 
 
         #Profile frame
-        profile_label = tk.Label(profile_frame, text="Profile Information", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
-        profile_label.pack()
+        profile_canvas = tk.Canvas(profile)
+        profile_canvas.pack(fill="both", expand=True, side="left")
+
+        profile_scrollBar = tk.Scrollbar(profile, orient="vertical", command=profile_canvas.yview)
+        profile_scrollBar.pack(side="right", fill="y")
+
+        profile_canvas.configure(yscrollcommand=profile_scrollBar.set)
+
+        profile_frame = tk.Frame(profile_canvas)
+        profile_canvas.create_window((0, 0), anchor="nw", window=profile_frame)
+
+        def on_frame_configure(event):
+            profile_canvas.configure(scrollregion=profile_canvas.bbox("all"))
+
+        profile_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            profile_canvas.itemconfig(profile_canvas.create_window((0, 0), anchor='nw', window=profile_frame), width=event.width)
+
+        profile_canvas.bind("<Configure>", on_canvas_configure)
+
+        #now you can use profile_frame as your main frame
 
 
+        header_label = tk.Label(profile_frame, text="Change Your Password", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
+        header_label.pack(pady=10)
+
+        label_current = tk.Label(profile_frame, text="Enter Current Password:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_current.pack(pady=10)
+        entry_current = tk.Entry(profile_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_current.pack(pady=5)
+
+        
+        label_new = tk.Label(profile_frame, text="Enter New Password:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_new.pack(pady=10)
+        entry_new = tk.Entry(profile_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_new.pack(pady=5)
+
+
+        label_renew = tk.Label(profile_frame, text="Re-enter New Password:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_renew.pack(pady=10)
+        entry_renew = tk.Entry(profile_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_renew.pack(pady=5)
+
+        def resetpass():
+            current=entry_current.get()
+            new=entry_new.get()
+            renew=entry_renew.get()
+            if(current==self.membersObj.memberDetails[rollnumber]['password']):
+                if(new==renew):
+                    self.membersObj.updateMember(rollnumber,new)
+            else:
+                return
+            entry_current.delete(0,tk.END)        
+            entry_new.delete(0,tk.END)        
+            entry_renew.delete(0,tk.END)        
+
+
+
+        search_button = tk.Button(profile_frame, text="Reset", command=resetpass,font=GUI.button_font,bg="#bd2d2d", fg="white",
+                                activebackground="#f12d2d", activeforeground="white", padx=10,pady=5, bd=0)
+        search_button.pack( pady=10)
 
 
 
@@ -256,38 +447,65 @@ class GUI:
 
 
         #MyBooks frame
-        settings_label = tk.Label(myBooks_frame, text="Settings", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
-        settings_label.pack()
+        
+        myBooks_canvas = tk.Canvas(myBooks)
+        myBooks_canvas.pack(fill="both", expand=True, side="left")
 
+        myBooks_scrollBar = tk.Scrollbar(myBooks, orient="vertical", command=myBooks_canvas.yview)
+        myBooks_scrollBar.pack(side="right", fill="y")
 
+        myBooks_canvas.configure(yscrollcommand=myBooks_scrollBar.set)
 
+        myBooks_frame = tk.Frame(myBooks_canvas)
+        myBooks_canvas.create_window((0, 0), anchor="nw", window=myBooks_frame)
 
+        def on_frame_configure(event):
+            myBooks_canvas.configure(scrollregion=myBooks_canvas.bbox("all"))
 
+        myBooks_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            myBooks_canvas.itemconfig(myBooks_canvas.create_window((0, 0), anchor='nw', window=myBooks_frame), width=event.width)
+
+        myBooks_canvas.bind("<Configure>", on_canvas_configure)
+
+        #now you can use myBooks_frame as your main frame
+
+             
+
+        def update_mybooks_frame():
+            for child in myBooks_frame.winfo_children():
+                child.destroy()
+
+            header_label = tk.Label(myBooks_frame, text="Books Issued To: "+str(rollnumber).upper(), font=("Helvetica",20,'bold'), fg="#333333")
+            header_label.pack(pady=10)   
+            for i in self.bookObj.bookDetails.keys():
+                if rollnumber in self.bookObj.bookDetails[i]['borrowers']:
+                    self.student_book_component_return(myBooks_frame,self.bookObj.bookDetails[i],i,rollnumber.strip(),update_mybooks_frame)
+        
+        update_mybooks_frame()
+
+       
         
 
         
 
-        def switch_frame(frame):
-            viewBooks.pack_forget()
-            profile_frame.pack_forget()
-            myBooks_frame.pack_forget()
-            frame.pack(fill="both", expand=True)
-           
+            
 
-        switch_frame(viewBooks)
+        switch_frame(viewBooks,'viewBooks')
 
 #===============================================================================================================================================
 
 
     def admin_book_component(self,frame,bookdict,BookID):
         mainbox=tk.Frame(frame,border=1,relief='solid')
-        mainbox.pack(fill='x',pady=5)
+        mainbox.pack(fill='x',pady=5,padx=10)
         title=tk.Label(mainbox,text=bookdict['name'],font=GUI.label_font)
         title.pack(anchor="w")
         author=tk.Label(mainbox,text="by "+bookdict['author'],font=GUI.content_font)
         author.pack(anchor='w')
         total1=tk.Label(mainbox,text="Book ID: "+BookID,font=GUI.content_font)
-        total=tk.Label(mainbox,text="\nTotal: "+bookdict['total'] +"\tAvailable: "+bookdict['available'].strip(),font=GUI.content_font)
+        total=tk.Label(mainbox,text="\nTotal: "+bookdict['total'] +"\tAvailable: "+str(bookdict['available']),font=GUI.content_font)
         total1.pack(anchor='w')
         total.pack(anchor='w')
         bin=tk.Label(mainbox,text="Bin: "+bookdict['bin'] ,font=GUI.content_font)
@@ -299,6 +517,66 @@ class GUI:
             
         borrowers=tk.Label(mainbox,text="Borrowers: "+brs ,font=GUI.content_font)
         borrowers.pack(anchor='w')
+  
+  
+    def student_book_component_return(self,frame,bookdict,BookID,roll,func):
+        mainbox=tk.Frame(frame,border=1,relief='solid')
+        mainbox.pack(fill='x',pady=5,padx=10)
+        
+       
+        def returnBookFunction(bookId,roll):
+            self.bookObj.returnBook(bookId,roll)
+            func()
+
+        button12 = tk.Button(mainbox, text="Return",font=GUI.button_font,bg="#bd2d2d", fg="white",
+                                activebackground="#f12d2d", activeforeground="white", padx=10,pady=5, bd=0
+                                ,command=lambda: returnBookFunction(BookID,roll))
+        button12.pack( pady=10,side='right',padx=30)
+
+        title=tk.Label(mainbox,text=bookdict['name'],font=GUI.label_font)
+        title.pack(anchor="w")    
+
+
+        author=tk.Label(mainbox,text="by "+bookdict['author'],font=GUI.content_font)
+        author.pack(anchor='w')
+
+        total1=tk.Label(mainbox,text="Book ID: "+BookID,font=GUI.content_font)
+        total=tk.Label(mainbox,text="\nTotal: "+bookdict['total'] +"\tAvailable: "+str(bookdict['available']),font=GUI.content_font)
+        total1.pack(anchor='w')
+        total.pack(anchor='w')
+        bin=tk.Label(mainbox,text="Bin: "+bookdict['bin'] ,font=GUI.content_font)
+        bin.pack(anchor='w')
+
+        
+
+  
+    def student_book_component_view(self,frame,bookdict,BookID,roll,display_books_function):
+        mainbox=tk.Frame(frame,border=1,relief='solid')
+        mainbox.pack(fill='x',pady=5,padx=10)
+        
+        def borrowBookFunction(bookId,roll):
+            self.bookObj.borrowBook(bookId,roll)
+            display_books_function()   
+            
+
+        button112 = tk.Button(mainbox, text="Borrow",font=GUI.button_font,bg="#4CAF50", fg="white",
+                                activebackground="#f12d2d", activeforeground="white", padx=10,pady=5, bd=0
+                                ,command=lambda: borrowBookFunction(BookID,roll))
+        button112.pack( pady=10,side='right',padx=30)
+
+        title=tk.Label(mainbox,text=bookdict['name'],font=GUI.label_font)
+        title.pack(anchor="w")
+
+        author=tk.Label(mainbox,text="by "+bookdict['author'],font=GUI.content_font)
+        author.pack(anchor='w')
+       
+
+        total1=tk.Label(mainbox,text="Book ID: "+BookID,font=GUI.content_font)
+        total=tk.Label(mainbox,text="\nTotal: "+bookdict['total'] +"\tAvailable: "+str(bookdict['available']),font=GUI.content_font)
+        total1.pack(anchor='w')
+        total.pack(anchor='w')
+        bin=tk.Label(mainbox,text="Bin: "+bookdict['bin'] ,font=GUI.content_font)
+        bin.pack(anchor='w')
         
 #===============================================================================================================================================
 
@@ -310,6 +588,9 @@ class GUI:
             child.destroy()
         self.root.minsize(900,500)    
         # self.root.maxsize(00,420) 
+
+
+        
 
         
         side_panel = tk.Frame(root, bg="#333333", width=200, height=500)
@@ -340,6 +621,16 @@ class GUI:
         delMembers_button = tk.Button(side_panel, text="Remove Member", font=GUI.button_font, bg="#4CAF50", fg="white", 
                                     activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(delMembers,'delMembers'), bd=0)
         delMembers_button.pack(fill="x", pady=10)
+
+        def logout():
+            self.welcome_page()
+            
+
+        logout_button = tk.Button(side_panel, text="Log Out", font=GUI.button_font,bg="#bd2d2d", fg="white",
+                                activebackground="#f12d2d", activeforeground="white", command=logout, bd=0)
+        logout_button.pack(fill="x", pady=10)
+
+
 
 
 
@@ -629,7 +920,7 @@ class GUI:
 
 
         submit_button = tk.Button(delBooks_frame, text="Remove", font=GUI.button_font, bg="#bd2d2d", fg="white",
-                                activebackground="#45a049", activeforeground="white", padx=20, pady=10, bd=0, 
+                                activebackground="#f12d2d", activeforeground="white", padx=20, pady=10, bd=0, 
                                 command=submit_form)
         submit_button.pack(pady=20)
 
@@ -661,30 +952,42 @@ class GUI:
         addMembers_canvas.bind("<Configure>", on_canvas_configure)
 
 
-        #now you can use addBooks_frame as your main screen. 
 
         header_label = tk.Label(addMembers_frame, text="Add a Member", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
         header_label.pack(pady=10)
 
         label_roll = tk.Label(addMembers_frame, text="Roll Number:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
         label_roll.pack(pady=5)
-        entry_roll = tk.Entry(addMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
-        entry_roll.pack(pady=5)
+        entry_roll2 = tk.Entry(addMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_roll2.pack(pady=5)
         
         label_name = tk.Label(addMembers_frame, text="Full Name:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
         label_name.pack(pady=5)
-        entry_name = tk.Entry(addMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
-        entry_name.pack(pady=5)
+        entry_name2 = tk.Entry(addMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_name2.pack(pady=5)
         
         label_password = tk.Label(addMembers_frame, text="Password:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
         label_password.pack(pady=5)
-        entry_password = tk.Entry(addMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
-        entry_password.pack(pady=5)
+        entry_password2 = tk.Entry(addMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_password2.pack(pady=5)
 
+
+        def submit_form_1():
+            name=entry_name2.get()
+            roll=entry_roll2.get().upper()
+            pswd=entry_password2.get()
+            self.membersObj.addMember({ roll : { 'name':name , 'password':pswd } })
+            
+            entry_name2.delete(0,tk.END)
+            entry_roll2.delete(0,tk.END)
+            entry_password2.delete(0,tk.END)
+             
+            
+            
 
         submit_button = tk.Button(addMembers_frame, text="Add a Member", font=GUI.button_font, bg="#4CAF50", fg="white",
                                 activebackground="#45a049", activeforeground="white", padx=20, pady=10, bd=0, 
-                                command=submit_form)
+                                command=submit_form_1)
         submit_button.pack(pady=20)
 
 
