@@ -505,7 +505,7 @@ class GUI:
         author=tk.Label(mainbox,text="by "+bookdict['author'],font=GUI.content_font)
         author.pack(anchor='w')
         total1=tk.Label(mainbox,text="Book ID: "+BookID,font=GUI.content_font)
-        total=tk.Label(mainbox,text="\nTotal: "+bookdict['total'] +"\tAvailable: "+str(bookdict['available']),font=GUI.content_font)
+        total=tk.Label(mainbox,text="\nTotal: "+str(bookdict['total']) +"\tAvailable: "+str(bookdict['available']),font=GUI.content_font)
         total1.pack(anchor='w')
         total.pack(anchor='w')
         bin=tk.Label(mainbox,text="Bin: "+bookdict['bin'] ,font=GUI.content_font)
@@ -621,6 +621,10 @@ class GUI:
         delMembers_button = tk.Button(side_panel, text="Remove Member", font=GUI.button_font, bg="#4CAF50", fg="white", 
                                     activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(delMembers,'delMembers'), bd=0)
         delMembers_button.pack(fill="x", pady=10)
+        
+        bookHistory_button = tk.Button(side_panel, text="Book History", font=GUI.button_font, bg="#4CAF50", fg="white", 
+                                    activebackground="#45a049", activeforeground="white", command=lambda: switch_frame(bookHistory,'bookHistory'), bd=0)
+        bookHistory_button.pack(fill="x", pady=10)
 
         def logout():
             self.welcome_page()
@@ -642,8 +646,9 @@ class GUI:
         delBooks = tk.Frame(main_content, bg="#f5f5f5")
         addMembers = tk.Frame(main_content, bg="#f5f5f5")
         delMembers = tk.Frame(main_content, bg="#f5f5f5")
+        bookHistory = tk.Frame(main_content, bg="#f5f5f5")
         
-        for frame in (viewBooks,addBooks,addMembers,delBooks,delMembers):
+        for frame in (viewBooks,addBooks,addMembers,delBooks,delMembers,bookHistory):
             frame.pack(fill="both", expand=True)
 
 
@@ -1041,7 +1046,95 @@ class GUI:
 #==============================================================================================================================
         
 
+
+
+
+
+        #delMembers Frame
+        bookHistory_canvas = tk.Canvas(bookHistory)
+        bookHistory_canvas.pack(fill="both", expand=True, side="left")
+
+        bookHistory_scrollBar = tk.Scrollbar(bookHistory, orient="vertical", command=bookHistory_canvas.yview)
+        bookHistory_scrollBar.pack(side="right", fill="y")
+
+        bookHistory_canvas.configure(yscrollcommand=bookHistory_scrollBar.set)
+
+        bookHistory_frame = tk.Frame(bookHistory_canvas)
+        bookHistory_canvas.create_window((0, 0), anchor="nw", window=bookHistory_frame)
+
+        def on_frame_configure(event):
+            bookHistory_canvas.configure(scrollregion=bookHistory_canvas.bbox("all"))
+
+        bookHistory_frame.bind("<Configure>", on_frame_configure)
+
+        def on_canvas_configure(event):
+            bookHistory_canvas.itemconfig(bookHistory_canvas.create_window((0, 0), anchor='nw', window=bookHistory_frame), width=event.width)
+
+        bookHistory_canvas.bind("<Configure>", on_canvas_configure)
         
+        #now you can use bookHistory_frame as your main frame
+
+        header_label33 = tk.Label(bookHistory_frame, text="Book Borrowing History", font=GUI.header_font, bg="#f5f5f5", fg="#333333")
+        header_label33.pack(pady=10)
+
+        label_roll33 = tk.Label(bookHistory_frame, text="Book ID:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
+        label_roll33.pack(pady=5)
+        entry_bkid = tk.Entry(bookHistory_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_bkid.pack(pady=5)
+
+        def clear_bookHistory():
+            j=0    
+
+            
+
+            for i in bookHistory_frame.winfo_children():
+                if j<=3:
+                    j+=1
+                    continue
+                
+                i.destroy()
+
+
+        def view_book_history():
+            bkid=entry_bkid.get()
+            clear_bookHistory()    
+
+            
+            try:
+                history_list=self.bookObj.bookHistory[bkid]
+                
+                mainbox=tk.Frame(bookHistory_frame,border=1,relief='solid')
+                mainbox.pack(fill='x',pady=5,padx=10)
+                
+                tk.Label(mainbox, text="Roll Number", font=GUI.content_font, bg="#f5f5f5", fg="#333333").grid(row=1,column=1,pady=5)
+                tk.Label(mainbox, text="Date Issued", font=GUI.content_font, bg="#f5f5f5", fg="#333333").grid(row=1,column=2,pady=5)
+                tk.Label(mainbox, text="Date Returned", font=GUI.content_font, bg="#f5f5f5", fg="#333333").grid(row=1,column=3,pady=5)
+                mainbox.columnconfigure((1,2,3),weight=1)
+                
+                i=2
+                for item in history_list:
+                    tk.Label(mainbox, text=list(item.keys())[0], font=GUI.content_font, bg="#f5f5f5", fg="#333333").grid(row=i,column=1,pady=5)
+                    tk.Label(mainbox, text=item[list(item.keys())[0]][0], font=GUI.content_font, bg="#f5f5f5", fg="#333333").grid(row=i,column=2,pady=5)
+                    tk.Label(mainbox, text=item[list(item.keys())[0]][1], font=GUI.content_font, bg="#f5f5f5", fg="#333333").grid(row=i,column=3,pady=5)
+                    i+=1
+
+            except KeyError:
+                self.alert("Error","History does not exist for this bookID")            
+            except:
+                self.alert("Error","Something Went Wrong!")
+
+        submit_button33 = tk.Button(bookHistory_frame, text="View", font=GUI.button_font, bg="#4CAF50", fg="white",
+                                activebackground="#45a049", activeforeground="white", padx=20, pady=10, bd=0, 
+                                command=view_book_history)
+        submit_button33.pack(pady=20)
+        
+
+
+
+
+
+
+#=================================================================================================================================================================
 
         def switch_frame(frame,button):
             viewBooks.pack_forget()
@@ -1049,12 +1142,16 @@ class GUI:
             delBooks.pack_forget()
             addMembers.pack_forget()
             delMembers.pack_forget()
+            bookHistory.pack_forget()
             viewBooks_button.configure(bg='#45a049')
             addBooks_button.configure(bg='#45a049')
             delBooks_button.configure(bg='#45a049')
             addMembers_button.configure(bg='#45a049')
             delMembers_button.configure(bg='#45a049')
-            
+            bookHistory_button.configure(bg='#45a049')
+            entry_bkid.delete(0,tk.END)
+            clear_bookHistory()
+
             if button=="viewBooks":
                 display_books_function(self.bookObj.bookDetails)
 
