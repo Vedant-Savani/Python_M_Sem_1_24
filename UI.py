@@ -1032,13 +1032,16 @@ class GUI:
 
         label_roll = tk.Label(delMembers_frame, text="Roll Number:", font=GUI.label_font, bg="#f5f5f5", fg="#555555")
         label_roll.pack(pady=5)
-        entry_roll = tk.Entry(delMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
-        entry_roll.pack(pady=5)
+        entry_roll6 = tk.Entry(delMembers_frame, font=GUI.input_font, width=30, bd=1, relief="solid")
+        entry_roll6.pack(pady=5)
 
+        def submit_form2():
+            self.membersObj.removeMember(entry_roll6.get())
+            entry_roll6.delete(0,tk.END)
 
         submit_button = tk.Button(delMembers_frame, text="Remove", font=GUI.button_font, bg="#bd2d2d", fg="white",
                                 activebackground="#45a049", activeforeground="white", padx=20, pady=10, bd=0, 
-                                command=submit_form)
+                                command=submit_form2)
         submit_button.pack(pady=20)
 
 
