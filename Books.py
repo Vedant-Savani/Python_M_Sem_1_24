@@ -67,8 +67,8 @@ class Books:
 
             else: #if book is already present
                 gui.GUI.success('Success','Book already present! Updated Stock!')
-                Books.bookDetails[bookID]['total'] += 1 #update stock
-                Books.bookDetails[bookID]['available'] += 1 #update available quantity
+                Books.bookDetails[bookID]['total'] = int(bookInfo['total']) + int(Books.bookDetails[bookID]['total']) #update stock
+                Books.bookDetails[bookID]['available'] = int(bookInfo['available']) +int(Books.bookDetails[bookID]['available'])  #update available quantity
 
         except MissingDetailsError: #if any detail is missing
             gui.GUI.alert('Error','Missing Details!')
@@ -126,7 +126,7 @@ class Books:
                 raise OutOfStockError
         
             else: #if nothing goes wrong
-                Books.bookDetails[bookID]['available'] -= 1
+                Books.bookDetails[bookID]['available'] = int(Books.bookDetails[bookID]['available'])-1
                 Books.bookDetails[bookID]['borrowers'].append(borrower)
                 gui.GUI.success('Success!', f'Book with ID \'{bookID}\' Borrowed!')
 
@@ -175,7 +175,7 @@ class Books:
                 raise BookNotBorrowedError
             
             else: #if nothing goes wrong
-                Books.bookDetails[bookID]['available'] += 1
+                Books.bookDetails[bookID]['available'] = int(Books.bookDetails[bookID]['available'])+1
                 Books.bookDetails[bookID]['borrowers'].remove(borrower)
                 gui.GUI.success('Success!','Book Returned!')
 
@@ -282,4 +282,3 @@ def main() -> int: #test cases
 
 if __name__ == '__main__':
     main()
-
