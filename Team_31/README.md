@@ -4,7 +4,7 @@ Python Mid-Semester Project
 Library Management System (LMS)
 -------------------------------
 
-_**©** Team 'Something', 2024_
+_**©** Team 'Pythonophiles', 2024_
 
 ## Team Members
 **Team 31**
