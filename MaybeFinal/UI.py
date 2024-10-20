@@ -96,7 +96,7 @@ class GUI:
             self.welcome_page()
 
         def loginClicked():
-            roll=entry_rollnumber.get()   
+            roll=entry_rollnumber.get().upper()  
             paswd=entry_password.get()
             if not(roll) or not (paswd):
                 messagebox.showerror("Empty", "Fields Can Not Be Empty!")
