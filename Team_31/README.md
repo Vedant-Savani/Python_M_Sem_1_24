@@ -15,7 +15,7 @@ _**©** Team 'Pythonophiles', 2024_
 
 ## How to run and use this application
 1. Run the **`main.py`** file by entering **`python3 main.py`**. Make sure that the current directory is correct.
-2. In the **Admin** login page, enter the following details: Username-> `admin` and password -> `123`.
+2. In the **Admin** login page, enter the following details: Username-> `admin` and Password -> `123`.
 3. No other files need to be handled.
 4. The terminal will show output for debugging purposes. It may be ignored.
 5. A single window of size `500 x 420` will open. The window will automatically resize itself as needed. However, it may be enlarged manually.
