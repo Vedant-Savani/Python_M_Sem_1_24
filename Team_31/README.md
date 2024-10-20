@@ -23,5 +23,5 @@ _**©** Team 'Pythonophiles', 2024_
 7. The `Enter` key is _not_ supported for submitting input and/or clicking any buttons.
 
 ## GitHub Repository
-Click [here](https://github.com/Vedant-Savani/Python_M_Sem_1_24) to access .
+Click [here](https://github.com/Vedant-Savani/Python_M_Sem_1_24) to access the repository.
 
