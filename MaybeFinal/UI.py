@@ -1036,7 +1036,7 @@ class GUI:
         entry_roll6.pack(pady=5)
 
         def submit_form2():
-            self.membersObj.removeMember(entry_roll6.get())
+            self.membersObj.removeMember(entry_roll6.get().upper())
             entry_roll6.delete(0,tk.END)
 
         submit_button = tk.Button(delMembers_frame, text="Remove", font=GUI.button_font, bg="#bd2d2d", fg="white",
