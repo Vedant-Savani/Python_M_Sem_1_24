@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
 from CSV_Handler import CSV_Handler as CSV
-from PIL import Image, ImageTk 
 from members import Members
 
 class GUI:
